@@ -52,7 +52,7 @@ int main(void)
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(1280, 720, "SHADER", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -68,19 +68,26 @@ int main(void)
         return -1;
     }
 
-    float vertices[] = {
+    GLfloat vertices[] = {
         -1.0, -1.0,
          1.0, -1.0,
          1.0, 1.0,
+
+         1.0, 1.0,
+         -1.0, 1.0,
+         -1.0, -1.0
     };
     GLuint VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
 
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0); // Позиции вершин
     glEnableVertexAttribArray(0);
+    
+    // Отвязка VBO
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     std::string vertex = readFile("vertex.shader");
     std::string fragment = readFile("fragment.shader");
@@ -88,16 +95,17 @@ int main(void)
     unsigned int shader = createShader(vertex, fragment);
     glUseProgram(shader);
 
-
+    glUniform2f(glGetUniformLocation(shader, "iResolution"), 1280, 720);
     
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glUniform1f(glGetUniformLocation(shader, "iTime"), glfwGetTime());
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
